@@ -1,0 +1,22 @@
+<html>
+<head>
+  <title>Tap Game</title>
+  <style>
+    body { text-align: center; margin-top: 100px; }
+    button { padding: 20px; font-size: 20px; background-color: yellow; }
+  </style>
+</head>
+<body>
+  <h1>Tap to Score!</h1>
+  <button id="tapBtn">Tap Me!</button>
+  <p>Score: <span id="score">0</span></p>
+  
+  <script>
+    let score = 0;
+    document.getElementById("tapBtn").addEventListener("click", function() {
+      score = score + 1;
+      document.getElementById("score").innerText = score;
+    });
+  </script>
+</body>
+</html>
