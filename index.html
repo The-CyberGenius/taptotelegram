@@ -1,22 +1,145 @@
 <html>
 <head>
-  <title>Tap Game</title>
+  <title>Slot Business with Demo</title>
   <style>
-    body { text-align: center; margin-top: 100px; }
-    button { padding: 20px; font-size: 20px; background-color: yellow; }
+    body {
+      background: linear-gradient(to bottom, #141e30, #243b55); display: flex;
+      justify-content: center; align-items: center; min-height: 100vh; margin: 0;
+      font-family: Arial, sans-serif; color: #fff;
+    }
+    .machine, .auth { background: #2c2c2c; width: 90%; max-width: 350px; padding: 20px;
+      border: 5px solid #c0c0c0; border-radius: 10px; box-shadow: 0 0 20px rgba(192, 192, 192, 0.3);
+      text-align: center; }
+    .title { background: #ff4500; padding: 10px; font-size: 24px; border-radius: 5px;
+      margin-bottom: 15px; color: #fff; text-shadow: 1px 1px #000; }
+    .reels { display: flex; justify-content: center; background: #000; padding: 10px;
+      border: 3px solid #fff; border-radius: 8px; overflow: hidden; }
+    .reel { width: 80px; height: 80px; background: #fff; margin: 5px; position: relative;
+      font-size: 40px; line-height: 80px; color: #000; border-radius: 5px; overflow: hidden; }
+    .reel-inner { position: absolute; top: 0; width: 100%; height: 100%; text-align: center;
+      transition: transform 1.5s ease-in-out; }
+    .spinning .reel-inner { animation: roll 1.5s ease-in-out forwards; }
+    @keyframes roll { 0% { transform: translateY(-240px); } 100% { transform: translateY(0); } }
+    .controls { margin-top: 20px; }
+    button { padding: 12px 30px; font-size: 18px; background: #ff4500; color: #fff;
+      border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 0 10px #ff4500; }
+    button:hover { background: #ff6347; } button:disabled { background: #555; }
+    input { padding: 10px; margin: 5px; width: 80%; border-radius: 5px; }
+    #result { font-size: 20px; margin-top: 10px; }
+    .win { color: #ffd700; animation: blink 1s infinite; }
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <h1>Tap to Score!</h1>
-  <button id="tapBtn">Tap Me!</button>
-  <p>Score: <span id="score">0</span></p>
-  
+  <div id="auth" class="auth">
+    <h2>Login / Signup</h2>
+    <input id="email" type="email" placeholder="Email Dal">
+    <input id="password" type="password" placeholder="Password Dal">
+    <button onclick="signup()">Signup</button>
+    <button onclick="login()">Login</button>
+    <button onclick="demoMode()">Skip as Demo</button>
+    <p id="authResult"></p>
+  </div>
+
+  <div id="machine" class="machine hidden">
+    <div class="title">Slot Roller</div>
+    <p>Coins: <span id="coins">0</span></p>
+    <div class="reels">
+      <div id="reel1" class="reel"><div class="reel-inner">?</div></div>
+      <div id="reel2" class="reel"><div class="reel-inner">?</div></div>
+      <div id="reel3" class="reel"><div class="reel-inner">?</div></div>
+    </div>
+    <div class="controls">
+      <button id="spinBtn">Spin (1 Coin)</button>
+      <button id="logoutBtn" onclick="logout()">Logout</button>
+      <p id="result">Spin Karo!</p>
+    </div>
+  </div>
+
   <script>
-    let score = 0;
-    document.getElementById("tapBtn").addEventListener("click", function() {
-      score = score + 1;
-      document.getElementById("score").innerText = score;
+    let symbols = ["7", "★", "◆", "♠", "♥"];
+    let coins = 0;
+    let spinning = false;
+    let isDemo = false;
+
+    // Demo Mode
+    function demoMode() {
+      isDemo = true;
+      coins = 100; // Demo ke liye 100 coins
+      document.getElementById("coins").innerText = coins;
+      showGame();
+      document.getElementById("logoutBtn").innerText = "Back to Login";
+    }
+
+    // Show Game
+    function showGame() {
+      document.getElementById("auth").classList.add("hidden");
+      document.getElementById("machine").classList.remove("hidden");
+    }
+
+    // Logout
+    function logout() {
+      isDemo = false;
+      coins = 0;
+      document.getElementById("machine").classList.add("hidden");
+      document.getElementById("auth").classList.remove("hidden");
+    }
+
+    // Spin Logic
+    document.getElementById("spinBtn").addEventListener("click", function() {
+      if (spinning || coins < 1) {
+        document.getElementById("result").innerText = coins < 1 ? "Coins Khatam!" : "Ruko, Chal Raha Hai!";
+        return;
+      }
+
+      coins -= 1;
+      document.getElementById("coins").innerText = coins;
+      spinning = true;
+      document.getElementById("spinBtn").disabled = true;
+
+      let reel1 = document.getElementById("reel1");
+      let reel2 = document.getElementById("reel2");
+      let reel3 = document.getElementById("reel3");
+
+      reel1.classList.add("spinning");
+      reel2.classList.add("spinning");
+      reel3.classList.add("spinning");
+
+      setTimeout(() => {
+        reel1.querySelector(".reel-inner").innerText = symbols[Math.floor(Math.random() * symbols.length)];
+        reel2.querySelector(".reel-inner").innerText = symbols[Math.floor(Math.random() * symbols.length)];
+        reel3.querySelector(".reel-inner").innerText = symbols[Math.floor(Math.random() * symbols.length)];
+
+        reel1.classList.remove("spinning");
+        reel2.classList.remove("spinning");
+        reel3.classList.remove("spinning");
+
+        let result = document.getElementById("result");
+        if (reel1.innerText === reel2.innerText && reel2.innerText === reel3.innerText) {
+          coins += 10;
+          result.innerText = "Jackpot! 10 Coins!";
+          result.classList.add("win");
+        } else {
+          result.innerText = "Try Again!";
+          result.classList.remove("win");
+        }
+        document.getElementById("coins").innerText = coins;
+        spinning = false;
+        document.getElementById("spinBtn").disabled = false;
+      }, 1500);
     });
+
+    // Dummy Signup/Login (Firebase Ke Bina)
+    function signup() {
+      alert("Firebase connect nahi hai, demo mode mein chalo!");
+      demoMode(); // Temporary, Firebase ke baad update hoga
+    }
+
+    function login() {
+      alert("Firebase connect nahi hai, demo mode mein chalo!");
+      demoMode(); // Temporary
+    }
   </script>
 </body>
 </html>
